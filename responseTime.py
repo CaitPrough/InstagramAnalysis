@@ -16,16 +16,42 @@ def process_message(file_path):
     participants = {p['name'] for p in data_file['participants']}
     chat_key = tuple(sorted(participants))
 
+    # Sort messages by timestamp
     messages.sort(key=lambda x: x['timestamp_ms'])
 
+    # Initialize dictionaries to store time differences
+    time_diffs = defaultdict(lambda: defaultdict(list))
+
+    # Iterate through sorted messages to calculate time differences
     for i in range(1, len(messages)):
         sender_name = messages[i]['sender_name']
         prev_sender_name = messages[i-1]['sender_name']
         timestamp1 = convert_timestamp(messages[i-1]['timestamp_ms'])
         timestamp2 = convert_timestamp(messages[i]['timestamp_ms'])
         time_diff = timestamp2 - timestamp1
-        
-        print(f"{prev_sender_name} -> {sender_name}: {time_diff}")
+
+        # Store time difference
+        time_diffs[chat_key][sender_name].append(time_diff)
+
+    # Calculate average and longest time between messages
+    avg_times = {}
+    longest_times = {}
+    for participant in participants:
+        if participant in time_diffs[chat_key]:
+            diffs = time_diffs[chat_key][participant]
+            if diffs:
+                avg_time = sum(diffs, timedelta()) / len(diffs)
+                longest_time = max(diffs)
+                avg_times[participant] = avg_time
+                longest_times[participant] = longest_time
+
+    # Print results for each conversation
+    print(f"CHAT PARTICIPANTS: {', '.join(participants)}")
+    for participant in participants:
+        avg_time_str = str(avg_times.get(participant, timedelta(seconds=0)))
+        longest_time_str = str(longest_times.get(participant, timedelta(seconds=0)))
+        print(f"{participant}: Average time between messages: {avg_time_str}, Longest time between messages: {longest_time_str}")
+    print("-" * 30)
 
 def process_messages():
     for folder_path, _, files in os.walk(root_folder):
