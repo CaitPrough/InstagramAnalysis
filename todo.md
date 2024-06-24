@@ -1,2 +1,1 @@
 - add analysis of time of day of messages
-- double texting (# of messages sent in a row)
