@@ -2,6 +2,7 @@ import os
 import json
 from collections import defaultdict
 
+# Define the root directory containing user folders
 root_folder = 'C:\\Users\\caitp\\OneDrive\\Desktop\\Insta\\inbox'
 
 consecutive_message_counts = defaultdict(lambda: defaultdict(list))
@@ -57,34 +58,34 @@ def process_message(file_path):
     
     count_consecutive_messages(data_file)
 
-def print_consecutive_stats():
+def process_messages_in_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        if filename.startswith("message_") and filename.endswith(".json"):
+            file_path = os.path.join(folder_path, filename)
+            process_message(file_path)
+
+def get_consecutive_stats():
+    stats_output = ""
     stats = calculate_stats()
     for chat_key in sorted(stats):
         participant_names_str = ', '.join(chat_key)
-        print(f"CHAT PARTICIPANTS: {participant_names_str}")
+        stats_output += f"CHAT PARTICIPANTS: {participant_names_str}\n"
         
         for participant in sorted(stats[chat_key]):
             avg_count = stats[chat_key][participant]['average']
             max_count = stats[chat_key][participant]['max']
             max_messages = stats[chat_key][participant]['max_messages']
-            print(f"{participant}:")
-            print(f"  Average: {avg_count:.2f}")
-            print(f"  Max: {max_count}")
-            print(f"  Messages in a row:")
+            stats_output += f"{participant}:\n"
+            stats_output += f"  Average: {avg_count:.2f}\n"
+            stats_output += f"  Max: {max_count}\n"
+            stats_output += f"  Messages in a row:\n"
             for message in max_messages:
                 if isinstance(message, list):  # Check if it's a list of messages
                     for msg in message:
-                        print(f"    {msg.get('content', '[Attachment or other type of message]')}")
+                        stats_output += f"    {msg.get('content', '[Attachment or other type of message]')}\n"
                 else:  # Single message case
-                    print(f"    {message.get('content', '[Attachment or other type of message]')}")
-        print("-")
+                    stats_output += f"    {message.get('content', '[Attachment or other type of message]')}\n"
+        stats_output += "-\n"
+    
+    return stats_output
 
-def process_messages():
-    for folder_path, _, files in os.walk(root_folder):
-        for filename in files:
-            if filename.startswith("message_") and filename.endswith(".json"):
-                file_path = os.path.join(folder_path, filename)
-                process_message(file_path)
-
-process_messages()
-print_consecutive_stats()

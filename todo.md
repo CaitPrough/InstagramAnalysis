@@ -1,1 +1,3 @@
-- add analysis of time of day of messages
+create visual reprensentation
+when opening multiple sets of data, they compound
+- should erase previous and start new
